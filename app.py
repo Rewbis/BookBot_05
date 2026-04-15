@@ -40,5 +40,21 @@ with st.sidebar:
         st.success(f"Exported {len(files)} files to /exports")
     
     st.divider()
+    st.header("Load Progress")
+    logs = st.session_state.exporter.list_logs()
+    if logs:
+        selected_log = st.selectbox("Select a log to load", logs)
+        if st.button("Load Selected Log"):
+            try:
+                data = st.session_state.exporter.load_log(selected_log)
+                st.session_state.state = ProjectState.model_validate(data['data'])
+                st.success("Project loaded successfully!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error loading log: {e}")
+    else:
+        st.info("No logs found in /logs.")
+
+    st.divider()
     st.markdown("### Model Config")
     st.info(f"Targeting: `{st.session_state.client.model}`")

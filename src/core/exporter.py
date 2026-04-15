@@ -18,6 +18,16 @@ class Exporter:
             json.dump(entry, f, indent=4)
         return filepath
 
+    def list_logs(self):
+        """Returns a list of log filenames."""
+        return sorted([f for f in os.listdir(self.logs_dir) if f.endswith('.json')], reverse=True)
+
+    def load_log(self, filename):
+        """Reads a log file and returns the data dictionary."""
+        filepath = os.path.join(self.logs_dir, filename)
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
     def export_txt_files(self, state: ProjectState):
         """Exports the state as a series of readable .txt files."""
         # World info

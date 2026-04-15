@@ -44,5 +44,5 @@ class ProjectState(BaseModel):
             "book_title": self.plot.book_title,
             "date": self.last_updated.strftime("%Y-%m-%d"),
             "time": self.last_updated.strftime("%H:%M:%S"),
-            "data": self.model_dump()
+            "data": self.model_dump(mode='json')
         }
