@@ -4,34 +4,56 @@ from datetime import datetime
 from .state import ProjectState
 
 class Exporter:
-    def __init__(self, base_dir="e:\\Coding\\BookBot_05"):
+    """Handles all file-system operations for saving logs, skeletons, and exports."""
+
+    def __init__(self, base_dir=None):
+        """
+        Initialize the Exporter with dynamic path discovery.
+        
+        If base_dir is not provided, it defaults to the project root relative to this file.
+        """
+        if base_dir is None:
+            # src/core/exporter.py -> project root
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+            
         self.exports_dir = os.path.join(base_dir, "exports")
         self.logs_dir = os.path.join(base_dir, "logs")
         self.skeleton_dir = os.path.join(base_dir, "skeleton_output")
+        
         os.makedirs(self.exports_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.skeleton_dir, exist_ok=True)
 
-    def save_log(self, state: ProjectState):
+    def save_log(self, state: ProjectState, checkpoint_name: str = ""):
+        """
+        Save a JSON snapshot of the current project state to the logs directory.
+        
+        Args:
+            state (ProjectState): The current project state to save.
+            checkpoint_name (str): Optional name prefix for the checkpoint.
+        """
         entry = state.log_entry()
-        filename = f"log_{entry['book_title'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+        tag = f"{checkpoint_name.replace(' ', '_')}_" if checkpoint_name else ""
+        filename = f"{tag}log_{entry['book_title'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         filepath = os.path.join(self.logs_dir, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(entry, f, indent=4)
         return filepath
 
+
     def list_logs(self):
-        """Returns a list of log filenames."""
+        """Return a sorted list of log filenames from the logs directory."""
         return sorted([f for f in os.listdir(self.logs_dir) if f.endswith('.json')], reverse=True)
 
     def load_log(self, filename):
-        """Reads a log file and returns the data dictionary."""
+        """Read a log file and return the data dictionary."""
         filepath = os.path.join(self.logs_dir, filename)
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
 
     def save_skeleton_draft(self, data: list, raw_text: str, filename: str = None):
-        """Saves both the parsed JSON and the raw AI text for debugging/persistence."""
+        """Save both the parsed JSON and the raw AI text for debugging and persistence."""
         if not filename:
             filename = f"skeleton_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
@@ -48,17 +70,17 @@ class Exporter:
         return json_path, txt_path
 
     def list_skeletons(self):
-        """Lists available skeleton JSON files."""
+        """Return a sorted list of available skeleton JSON files."""
         return sorted([f for f in os.listdir(self.skeleton_dir) if f.endswith('.json')], reverse=True)
 
     def load_skeleton(self, filename: str):
-        """Loads a skeleton JSON file."""
+        """Read and return a skeleton JSON file."""
         filepath = os.path.join(self.skeleton_dir, filename)
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
 
     def export_txt_files(self, state: ProjectState):
-        """Exports the state as a series of readable .txt files."""
+        """Export the project state as a series of formatted .txt files."""
         # World info
         world_path = os.path.join(self.exports_dir, f"{state.plot.book_title}_world_info.txt")
         with open(world_path, 'w', encoding='utf-8') as f:
@@ -96,7 +118,7 @@ class Exporter:
         return [world_path, style_path, meta_path]
 
     def format_skeleton_as_text(self, data: list) -> str:
-        """Converts a skeleton list into a human-readable string."""
+        """Convert a skeleton chapter list into a human-readable string."""
         lines = ["BOOK SKELETON EXPORT", "="*40, ""]
         for chap in data:
             num = chap.get('chapter_number', '?')

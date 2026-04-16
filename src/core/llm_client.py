@@ -2,11 +2,16 @@ import requests
 import json
 
 class OllamaClient:
+    """Low-level HTTP client for interacting with the Ollama API."""
+
     def __init__(self, model="richardyoung/qwen3-14b-abliterated:Q5_K_M", base_url="http://localhost:11434"):
+        """Initialize the client with model name and base URL."""
         self.model = model
         self.base_url = f"{base_url}/api/generate"
 
     def prompt(self, system_prompt: str, user_prompt: str):
+        """Send a prompt to the LLM and return the generated response string."""
+
         payload = {
             "model": self.model,
             "system": system_prompt,

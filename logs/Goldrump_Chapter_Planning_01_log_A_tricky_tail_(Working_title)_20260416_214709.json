@@ -1,0 +1,231 @@
+{
+    "book_title": "A tricky tail (Working title)",
+    "date": "2026-04-15",
+    "time": "16:47:12",
+    "data": {
+        "world": {
+            "setting": "A large country, young by other standards, bridging a continent from east to west. Encompassing vast plains, mountain ranges, deserts, mighty forests... A powerful alliance of city states making the \"united dominions\" much like the united states, but low tech (medieval) and low magic (game of thrones)",
+            "history": "the united dominions have grown complacent and forgotten the principles they fought for. it was not their fault, their forebears were so successful in overcoming evils, they raised a generation who never knew of them. And that generation raised a new generation, who had no way to remember the grifts and tricks possible - they thought the old ways were the best as they had never experienced the horrors of e.g. poor dental care, low hygiene, corruption at every level, favouritism, cronyism, foreign interests actively seeking their downfall... they thought of them as issues other countries had, not them, never them... An age of prosperity, with a worm eating, growing in the centre. They had fought several wars with low impact. They were proud and thought it justified.\n",
+            "rules": "Each city state has some autonomy, but rules under the central government, with representation. Magic is extremely rare, magical creatures are extrene",
+            "other": "Perverts and cheats have always existed, but here they have found how to go undetected for too long. One after another, they are exposed and brought to light, but others are still operating in the shadows, learning and improving their camouflage."
+        },
+        "style": {
+            "tone": "Gritty, realistic, brutal at times, but frequently holding up some fragment of the noble nature people are capable of.",
+            "voice": "Third person of Gonad, with some chapters from  the perspective of the antagonist, Gonad Goldrump, with other chapters from the perspective of his enemy of the day.",
+            "vocabulary": "Keep it concise, don't indulge in puffery - if a fact or event is mundane, feel free to describe it as such.",
+            "pov_global": "Third Person Limited",
+            "tense": "Past"
+        },
+        "plot": {
+            "book_title": "A tricky tail (Working title)",
+            "goals": "A stupid, vainglorious man born into wealth, let's call him Gonad Goldrump, learns that he can bully, manipulate and ultimately betray all who trust him despite being a shambling halfwit. He builds a small empire this way, but never changes his strategy or grows in any way. This works while he can operate in the shadows, concealing his actions from the wider world, finding new victims easily. However, he rises to a public position and is exposed, ruining the economy and international relationships for years to come. He does not accept responsibility and learns nothing, having long ago bought into his own myth.\n",
+            "conflicts": "On one side, a heroic, honourable society. The institutions rely on the assumption of decency. Our antagonist Gonad seeks to rip it all apart for his own gain. Defying all, he bulls his way through institutions and enterprises, twisting the law to his own ends.",
+            "stakes": "A mighty empire, benevolent and concerned with the betterment of all society, peace and progress. Will it be brought low by this figurehead of debasement and privilege?\n",
+            "twists": "The very people who he seeks to disenfranchise are confused and support him, due to his charisma and lies. Then the laws enable him (since he has managed to place his own people in power). It emerges expert assistance and funding was given to his chief advisers, from foreign powers intent on destroying those very people. Few people can believe anyone would be so blinkered, so blind. The evidence is not believed. The harmful effects are dismissed until... is it too late? Perhaps not, maybe an underdog can rise up and show a better way... many local grassroots efforts coordinate and combine, putting aside differences (after a struggle, with varying degrees of success) and establish a new order, a new resistance to the overlord Gonad Goldrump.",
+            "philosophy": "Liars and cheaters can only go so far - if they reach beyond \"safe\" areas of exploitation, they will be found out and do irreparable damage to the world."
+        },
+        "chapters": [
+            {
+                "chapter_number": 1,
+                "title": "Poor Little Rich Kid",
+                "summary": "Gonad Goldrump, a frail and petulant child of a wealthy but cruel father, learns to lie to survive kindergarten, earning distrust from peers and setting the stage for a life of manipulation.",
+                "pov": "Gonad Goldrump",
+                "plot_thread_a": "Gonad, a frail and petulant child, navigates the treacherous waters of kindergarten by taking advantage of those around him, an early humiliation in front of his father being the justification he needs. His father dislikes him because of the other children... if they were worse, unhappier, his father would love him more by comparison - or so Gonad thinks. This behaviour earns distrust from peers and sets the stage for a life of manipulation.",
+                "plot_thread_b": "Gonad's cruel father, Lord Goldrump, observes his son's early displays of manipulation, dislikes all children for being \"needy, weak\" and therefore doubly so his own son. His curled lip and infrequent contact crushes Gonad's piteous, silent pleas to be loved.",
+                "key_revelation": "Gonad's lie, though simple, reveals a desperate need to be liked - and a willingness to do anything, say anything to be liked. This need will shape his future empire.",
+                "scene_notes": "The chapter opens with Gonad, a frail and pale child, entering a bustling kindergarten filled with boisterous children and the scent of chalk and apples. He is accompanied by the headmaster and his father, a tour of the school they hope he will join.\nGonad is sat at a table with other children his age. He reaches over to pick up a brush, but knocks over a water pot by accident. He freezes and panics, shrinking from the teacher who swoops in with paper towels and a smile. The other children laugh good naturedly, but Gonad feels it as thunderous mockery. His father looks angry. The headteacher is calm. \nThe teacher asks what happened and Gonad speaks first, accusing his neighbour of knocking it over. The confusion. Surprise that he should lie so shamelessly. The teacher makes light of it and brushes it off, but Gonad screams that it wasn't his fault, bursting into tears. His father walks out and does not return, sending the nanny to collect his son."
+            },
+            {
+                "chapter_number": 2,
+                "title": "An Early Inheritance",
+                "summary": "After his father loans him a fortune and tells him to leave, Gonad spirals into decadence with friends, squandering his wealth until his father, in a final act of spite, tops him up 'for the last time.'",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 3,
+                "title": "A Father Figure for the Desperate",
+                "summary": "Gonad meets a charismatic mentor who teaches him the ruthless trio of rules: 'Attack, Attack, Attack,' 'Admit Nothing, Deny Everything,' and 'Always Claim Victory,' shaping his worldview through brutal lessons.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 4,
+                "title": "More Wrong-Headed Life Lessons",
+                "summary": "Gonad's mentor expands his playbook with legal and media strategies, turning lawsuits into weapons, manipulating headlines, and ensuring he never settles, further entrenching his manipulative style.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 5,
+                "title": "The Merchant's Gambit",
+                "summary": "Gonad infiltrates a merchant guild, using lawsuits and media spins to corner rivals, earning a reputation as a shrewd businessman while the guild's leaders, wary of his methods, quietly plot his downfall.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 6,
+                "title": "The Art of the Scapegoat",
+                "summary": "When a failed trade deal threatens his standing, Gonad frames a loyal servant as the scapegoat, leveraging the guild's fear of public blame to secure a new contract and a promotion to guild overseer.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 7,
+                "title": "The Whispering Forest",
+                "summary": "Gonad ventures into the northern forests, exploiting a logging dispute by bribing locals and planting rumors of a rival warlord, securing timber deals that drain the forest and enrich his coffers.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 8,
+                "title": "The Shadow of the Desert",
+                "summary": "A caravan route through the desert is nearly lost to bandits, but Gonad stages a 'rescue' with hired mercenaries, claiming victory in the press and earning the trust of the trade council, though the council grows wary of his theatrics.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 9,
+                "title": "The Queen's Coin",
+                "summary": "Gonad is summoned to the court of the young Queen Elara, where his charm and cunning win him a seat on her advisory council, though he secretly manipulates court politics to secure a royal trade charter for his growing empire.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 10,
+                "title": "The Unseen Thread",
+                "summary": "Gonad's web of influence tightens as he engineers the downfall of a rival councilor through a framed scandal, yet the queen begins to question his loyalty, sensing the threads of his schemes.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 11,
+                "title": "The Crown's New Architect",
+                "summary": "Publicly hailed as the queen's 'architect of prosperity,' Gonad is granted a seat in the Royal Treasury, where he begins reshaping the economy through opaque deals, further isolating himself from the court's scrutiny.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 12,
+                "title": "The Ledger of Lies",
+                "summary": "Gonad's financial reforms, cloaked in complexity, begin to strain the treasury's reserves. A minor audit uncovers discrepancies, but he quells the uproar by framing the auditor as a 'corrupt bureaucrat' in the press.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 13,
+                "title": "The Storm in the East",
+                "summary": "A trade war erupts with the eastern dominions after Gonad's tariffs backfire, yet he spins the crisis as a 'necessary sacrifice for future glory,' rallying public support through a media campaign that paints him as the queen's savior.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 14,
+                "title": "The Unmasking",
+                "summary": "A leaked letter reveals Gonad's manipulations, sparking riots in the streets. The queen, cornered, publicly names him as the architect of the crisis, but Gonad, now a public figure, doubles down with a speech that frames the leak as a 'foreign plot.'",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 15,
+                "title": "The Empire of Ashes",
+                "summary": "The dominions' economy collapses under Gonad's schemes. He flees to his estates, but the queen, now a figurehead, is forced to negotiate with foreign powers, while the people turn on the institutions that once trusted him.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 16,
+                "title": "The Last Laugh",
+                "summary": "Gonad, hidden in his manor, watches the chaos unfold through a spy network, convinced the dominions will rise again under his 'guidance,' yet the once-loyal merchants now plot his downfall in secret.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 17,
+                "title": "The People's Ledger",
+                "summary": "A populist movement emerges, led by a former merchant who survived Gonad's schemes. The people demand transparency, and the queen, now a pawn, is forced to confront the architect of her ruin.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 18,
+                "title": "The Reckoning",
+                "summary": "Gonad is dragged from his manor, his once-loyal servants turning on him. The people, through a new council, demand reparations, but Gonad, undeterred, claims victory in the press, calling the reckoning a 'necessary step toward unity.'",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 19,
+                "title": "The Unbroken Cycle",
+                "summary": "The dominions limp toward recovery, but Gonad, now a symbol of hubris, is exiled to the edge of the map, where he begins anew with a new set of victims, repeating the same cycle of manipulation and betrayal.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            },
+            {
+                "chapter_number": 20,
+                "title": "The Tail's End",
+                "summary": "Years later, a young boy in a distant village hears tales of Gonad's rise and fall. The story, passed down, becomes a cautionary tale of unchecked greed, though the boy, like Gonad once, is already lying to his peers to gain their trust.",
+                "pov": "",
+                "plot_thread_a": "",
+                "plot_thread_b": "",
+                "key_revelation": "",
+                "scene_notes": ""
+            }
+        ],
+        "last_updated": "2026-04-15T16:47:12.786956"
+    }
+}

@@ -3,14 +3,37 @@ import json
 import os
 import re
 from datetime import datetime
-from src.core.state import ChapterMetadata
+from src.core.state import ChapterMetadata, ProjectState
 from src.core.agents import BookBotAgents
+from src.core.workflow import NarrativeWorkflow
+
+def clean_narrative_text(content):
+    """Cleans JSON artifacts like brackets and quotes from AI narrative output."""
+    if isinstance(content, list):
+        # Convert list of notes to newline-separated string
+        return "\n".join([clean_narrative_text(item) for item in content])
+    if not isinstance(content, str):
+        return str(content)
+    
+    # Strip leading/trailing brackets if it looks like a single-item list that was stringified
+    content = content.strip()
+    if content.startswith("[") and content.endswith("]"):
+        content = content[1:-1].strip()
+    
+    # Strip leading/trailing quotes if it was stringified poorly
+    if (content.startswith('"') and content.endswith('"')) or (content.startswith("'") and content.endswith("'")):
+        content = content[1:-1].strip()
+        
+    return content
 
 def render_planning_view():
+    """Render the dual-phase chapter planning interface."""
     state = st.session_state.state
     client = st.session_state.client
     st.header("Chapter Architect")
     agents = BookBotAgents(client)
+    exporter = st.session_state.exporter
+    workflow = NarrativeWorkflow(agents, exporter)
     
     # --- TOKEN TRACKING HEADER ---
     with st.container(border=True):
@@ -27,6 +50,37 @@ def render_planning_view():
 
     st.divider()
 
+    # --- PROJECT CONTINUITY SECTION ---
+    with st.expander("🛡️ Project Continuity & Checkpoints", expanded=False):
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            checkpoint_tag = st.text_input(
+                "Checkpoint Tag", 
+                placeholder="e.g. Phase 1 Done, After Twist Polish",
+                help="A descriptive name for this save (e.g., 'Act 1 Polished')."
+            )
+            if st.button("💾 Save Project Checkpoint", use_container_width=True, help="Create a named backup of the entire project state."):
+                path = st.session_state.exporter.save_log(state, checkpoint_tag)
+                st.success(f"Checkpoint saved: {os.path.basename(path)}")
+        
+        with c2:
+            all_logs = st.session_state.exporter.list_logs()
+            selected_checkpoint = st.selectbox(
+                "Restore from Checkpoint", 
+                [""] + all_logs,
+                help="Select a previous save to restore the project state."
+            )
+            if selected_checkpoint and st.button("📂 Restore Project", use_container_width=True, help="Load the selected checkpoint and refresh the session."):
+                try:
+                    data = st.session_state.exporter.load_log(selected_checkpoint)
+                    st.session_state.state = ProjectState.model_validate(data['data'])
+                    st.success("Project checkpoint restored!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Restoration failed: {e}")
+
+    st.divider()
+
     # --- PHASE SELECTION ---
     phase = st.radio("Select Planning Phase", ["Step 1: Book Skeleton", "Step 2: Detailed Architect"], horizontal=True)
 
@@ -36,7 +90,7 @@ def render_planning_view():
         
         # Local state for skeleton if not yet populated
         if not state.chapters:
-            if st.button("Initialize Skeleton (20 Chapters)"):
+            if st.button("Initialize Skeleton (20 Chapters)", help="Create empty chapter slots to begin planning."):
                 state.chapters = [ChapterMetadata(chapter_number=i+1) for i in range(20)]
                 st.rerun()
         
@@ -44,58 +98,31 @@ def render_planning_view():
         
         col_gen, col_save, col_load = st.columns([2, 1, 1])
         
-        if col_gen.button("🚀 Generate Skeleton Suggestion"):
-            # Thorough State Reset: Clear all possible widget keys to force fresh rendering
+        if col_gen.button("🚀 Generate Skeleton Suggestion", help="Run the automated 5-step agent workflow to draft a full book skeleton."):
+            # Thorough State Reset
             prefixes = ["temp_title_", "temp_sum_", "skel_title_", "skel_sum_"]
             keys_to_clear = [k for k in st.session_state.keys() if any(k.startswith(p) for p in prefixes)]
             for k in keys_to_clear:
                 del st.session_state[k]
                 
             with st.status("Plotting Book Skeleton...", expanded=True) as status:
-                st.write("🤖 **01a_skeleton_plotter** drafting skeleton...")
-                skel_json = agents.run_skeleton_plotter_turn(state, target_count)
-                raw_skel = skel_json.get('raw', 'N/A')
-                if "error" in skel_json: 
-                    st.error(f"Plotter Error: {skel_json['error']}")
-                    st.session_state.exporter.save_skeleton_draft([], raw_skel, f"ERROR_skel_{datetime.now().strftime('%H%M%S')}")
+                result = workflow.run_skeleton_generation(state, target_count, st.write)
+                
+                if "error" in result:
+                    st.error(f"Generation Error: {result['error']}")
                     return
-                skel_text = json.dumps(skel_json, indent=2)
 
-                st.write("🧐 **01b_skeleton_critic** reviewing structure...")
-                critique = agents.run_skeleton_critic_turn(state, skel_text)
-                
-                st.write("🛠️ **01a_skeleton_plotter** refining skeleton...")
-                refined_json = agents.run_skeleton_plotter_turn(state, target_count, critique, skel_text)
-                raw_refined = refined_json.get('raw', json.dumps(refined_json))
-                if "error" in refined_json: 
-                    st.error(f"Refinement Error: {refined_json['error']}")
-                    st.session_state.exporter.save_skeleton_draft([], raw_refined, f"ERROR_refined_{datetime.now().strftime('%H%M%S')}")
-                    return
-                
-                st.write("🔄 **01c_skeleton_formatter** extracting structured JSON...")
-                formatted_json = agents.run_skeleton_formatter_turn(raw_refined, target_count)
-                if "error" in formatted_json:
-                    st.error(f"Formatting Error: {formatted_json['error']}")
-                    return
-                formatted_text = json.dumps(formatted_json, indent=2)
-
-                st.write("⚖️ **01b_skeleton_critic** final JSON assessment...")
-                final_qa = agents.run_skeleton_critic_turn(state, formatted_text, is_final=True)
-                
                 status.update(label="Skeleton Generation Complete!", state="complete", expanded=False)
-                
-                # Save to skeleton_output directory
-                j_path, t_path = st.session_state.exporter.save_skeleton_draft(
-                    formatted_json.get("chapters", []), 
-                    f"FINAL JSON:\n{formatted_text}\n\nFINAL QA:\n{final_qa}\n\nREFINED PROSE:\n{raw_refined}\n\nINITIAL CRITIQUE:\n{critique}"
-                )
-                st.toast(f"Skeleton saved to {os.path.basename(j_path)}")
+                st.toast(f"Skeleton saved to {os.path.basename(result['save_path'])}")
 
-                st.session_state.temp_skel = formatted_json.get("chapters", [])
-                st.session_state.temp_skel_critic = final_qa
+                st.session_state.temp_skel = result["chapters"]
+                st.session_state.temp_skel_critic = result["final_qa"]
+                st.session_state.temp_skel_initial_critique = result["initial_critique"]
+                st.session_state.temp_skel_refined_prose = result["refined_prose"]
                 st.rerun()
 
-        if col_save.button("💾 Save Current"):
+
+        if col_save.button("💾 Save Current", help="Save the currently visible skeleton draft as a reusable file."):
             if "temp_skel" in st.session_state:
                 formatted_txt = st.session_state.exporter.format_skeleton_as_text(st.session_state.temp_skel)
                 j, t = st.session_state.exporter.save_skeleton_draft(
@@ -111,7 +138,11 @@ def render_planning_view():
         # Load UI
         skels = st.session_state.exporter.list_skeletons()
         if skels:
-            selected = col_load.selectbox("📂 Load...", ["-- Select --"] + skels)
+            selected = col_load.selectbox(
+                "📂 Load...", 
+                ["-- Select --"] + skels,
+                help="Load a previously saved skeleton draft from file."
+            )
             if selected != "-- Select --":
                 try:
                     loaded_data = st.session_state.exporter.load_skeleton(selected)
@@ -147,13 +178,59 @@ def render_planning_view():
 
             with st.expander("🔍 View Full Critic QA Assessment (Step 5)"):
                 st.info(qa_text)
+
+            # --- TARGETED REFINEMENT DASHBOARD ---
+            initial_critique = st.session_state.get("temp_skel_initial_critique", "")
+            if initial_critique:
+                with st.container(border=True):
+                    st.subheader("🛠️ Narrative Refinement Dashboard")
+                    st.info("Select specific improvements from the initial AI critique to apply to this draft.")
+                    
+                    recs = agents.extract_recommendations(initial_critique)
+                    selected_recs = []
+                    if recs:
+                        for i, rec in enumerate(recs):
+                            if st.checkbox(rec, key=f"rec_check_{i}"):
+                                selected_recs.append(rec)
+                    else:
+                        st.caption("No specific bullet-point recommendations extracted. Use the custom box below.")
+                    
+                    custom_feedback = st.text_area("Additional Custom Adjustments", help="Add your own plot twists or style changes here.")
+                    
+                    if st.button("🚀 Execute Targeted Refinement", help="Re-run the generation logic focusing specifically on the points selected above."):
+                        if not selected_recs and not custom_feedback:
+                            st.warning("Please select at least one recommendation or add custom feedback.")
+                        else:
+                            with st.status("Refining Skeleton...", expanded=True) as status:
+                                # Construct the combined critique
+                                combined_critique = ""
+                                if selected_recs:
+                                    combined_critique += "### SELECTED RECOMMENDATIONS:\n- " + "\n- ".join(selected_recs) + "\n\n"
+                                if custom_feedback:
+                                    combined_critique += f"### USER CUSTOM FEEDBACK:\n{custom_feedback}\n"
+                                
+                                current_prose = st.session_state.get("temp_skel_refined_prose", json.dumps(st.session_state.temp_skel))
+                                result = workflow.run_skeleton_refinement(state, target_count, combined_critique, current_prose, st.write)
+                                
+                                if "error" in result:
+                                    st.error(f"Refinement Error: {result['error']}")
+                                    return
+
+                                st.session_state.temp_skel = result["chapters"]
+                                st.session_state.temp_skel_critic = result["final_qa"]
+                                st.session_state.temp_skel_refined_prose = result["refined_prose"]
+                                
+                                st.toast(f"Refined skeleton saved as {os.path.basename(result['save_path'])}")
+                                status.update(label="Targeted Refinement Complete!", state="complete", expanded=False)
+                                st.rerun()
+
             
             for i, chap in enumerate(st.session_state.temp_skel):
                 with st.expander(f"Ch {chap['chapter_number']}: {chap['title']}"):
                     chap['title'] = st.text_input("Title", chap['title'], key=f"temp_title_{i}")
                     chap['summary'] = st.text_area("High-level Summary", chap['summary'], key=f"temp_sum_{i}")
             
-            if st.button("✅ Accept & Lock In Skeleton"):
+            if st.button("✅ Accept & Lock In Skeleton", help="Move this draft into the main chapter registry. WARNING: This overwrites current planning progress."):
                 # Overwrite existing chapters with the skeleton
                 new_chapters = []
                 for chap in st.session_state.temp_skel:
@@ -199,23 +276,23 @@ def render_planning_view():
             st.markdown(f"### Next: Chapter {target_chap.chapter_number} - {target_chap.title}")
             st.caption(f"**Skeleton Guide:** {target_chap.summary}")
             
-            if st.button(f"Generate Details for Chapter {target_chap.chapter_number}"):
+            if st.button(f"Generate Details for Chapter {target_chap.chapter_number}", help="Ask the agents to draft POV, revelations, and scene notes for this chapter."):
                 with st.status(f"Architecting Chapter {target_chap.chapter_number}...", expanded=True) as status:
                     context = agents.get_context_summary(state.chapters[:next_idx], count=5)
-                    st.write("🤖 **02a_plotter** Drafting...")
-                    draft_json = agents.run_plotter_turn(state, target_chap.chapter_number, context)
-                    draft_text = json.dumps(draft_json, indent=2)
-                    st.write("🧐 **02b_critic** Critiquing...")
-                    critique = agents.run_critic_turn(state, target_chap.chapter_number, context, draft_text)
-                    st.write("🛠️ **02a_plotter** Refining...")
-                    refined_json = agents.run_plotter_turn(state, target_chap.chapter_number, context, critique, draft_text)
-                    refined_text = json.dumps(refined_json, indent=2)
-                    st.write("⚖️ **02b_critic** Final Assessment...")
-                    final_thoughts = agents.run_critic_turn(state, target_chap.chapter_number, context, refined_text, is_final=True)
+                    result = workflow.run_chapter_detailing(state, target_chap.chapter_number, context, st.write)
                     
+                    if "error" in result:
+                        st.error(f"Detailing Error: {result['error']}")
+                        return
+
                     status.update(label="Detailed Draft Ready!", state="complete", expanded=False)
-                    st.session_state.active_draft = refined_json
-                    st.session_state.active_critic = final_thoughts
+                    # Clean the draft data once before loading into UI
+                    cleaned_draft = {}
+                    for k, v in result["draft_json"].items():
+                        cleaned_draft[k] = clean_narrative_text(v)
+                    
+                    st.session_state.active_draft = cleaned_draft
+                    st.session_state.active_critic = result["final_qa"]
                     st.session_state.active_chap_idx = next_idx
 
         # Interaction loop for proposed details
@@ -225,16 +302,16 @@ def render_planning_view():
                 c1, c2 = st.columns([2, 1])
                 with c1:
                     d = st.session_state.active_draft
-                    title = st.text_input("Title", d.get("title", ""), key="det_title")
-                    summary = st.text_area("Skeleton Summary (Update if needed)", state.chapters[st.session_state.active_chap_idx].summary, key="det_sum")
-                    pov = st.text_input("POV", d.get("pov", ""), key="det_pov")
-                    rev = st.text_input("Revelation", d.get("key_revelation", ""), key="det_rev")
-                    a = st.text_area("Thread A", d.get("plot_thread_a", ""), key="det_a")
-                    b = st.text_area("Thread B", d.get("plot_thread_b", ""), key="det_b")
-                    notes = st.text_area("Scene Notes", d.get("scene_notes", ""), key="det_notes")
+                    title = st.text_input("Title", d.get("title", ""), key="det_title", help="Chapter Title.")
+                    summary = st.text_area("Skeleton Summary (Update if needed)", state.chapters[st.session_state.active_chap_idx].summary, key="det_sum", help="The high-level summary from the skeleton.")
+                    pov = st.text_input("POV", d.get("pov", ""), key="det_pov", help="The point-of-view character for this chapter.")
+                    rev = st.text_input("Revelation", d.get("key_revelation", ""), key="det_rev", help="What key discovery or plot twist occurs?")
+                    a = st.text_area("Thread A", d.get("plot_thread_a", ""), key="det_a", help="The primary narrative sequence.")
+                    b = st.text_area("Thread B", d.get("plot_thread_b", ""), key="det_b", help="Subplots, thematic mirrors, or secondary sequences.")
+                    notes = st.text_area("Scene Notes", d.get("scene_notes", ""), key="det_notes", help="Detailed beat-by-beat scene directions.")
                 with c2:
                     st.info(st.session_state.active_critic)
-                    if st.button("🔍 Check for Ripple Effects"):
+                    if st.button("🔍 Check for Ripple Effects", help="Analyze how these chapter changes might break consistency in later parts of the book."):
                         with st.spinner("Analyzing impacts..."):
                             impact = agents.analyze_impact(state, st.session_state.active_chap_idx, f"{a}\n{b}\n{rev}")
                             st.session_state.ripple_alert = impact
@@ -249,7 +326,8 @@ def render_planning_view():
                     chap.key_revelation, chap.plot_thread_a, chap.plot_thread_b = rev, a, b
                     chap.scene_notes = notes
                     del st.session_state.active_draft
-                    del st.session_state.ripple_alert
+                    if "ripple_alert" in st.session_state:
+                        del st.session_state.ripple_alert
                     st.rerun()
 
         st.divider()

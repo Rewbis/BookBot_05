@@ -31,11 +31,11 @@ with st.sidebar:
     st.header("Project Controls")
     st.subheader(st.session_state.state.plot.book_title)
     
-    if st.button("Save Log Entry", help="Save a JSON snapshot of current state to /logs"):
+    if st.button("Save Log Entry", help="Save a JSON snapshot of the current state to the /logs directory for later recovery."):
         path = st.session_state.exporter.save_log(st.session_state.state)
         st.success(f"Log saved: {os.path.basename(path)}")
     
-    if st.button("Export to TXT", help="Generate ready-to-use .txt files in /exports"):
+    if st.button("Export to TXT", help="Generate readable .txt versions of your world info, style guide, and chapter metadata."):
         files = st.session_state.exporter.export_txt_files(st.session_state.state)
         st.success(f"Exported {len(files)} files to /exports")
     
@@ -43,8 +43,12 @@ with st.sidebar:
     st.header("Load Progress")
     logs = st.session_state.exporter.list_logs()
     if logs:
-        selected_log = st.selectbox("Select a log to load", logs)
-        if st.button("Load Selected Log"):
+        selected_log = st.selectbox(
+            "Select a log to load", 
+            logs,
+            help="Choose a previous project snapshot to restore."
+        )
+        if st.button("Load Selected Log", help="Overwrite the current in-memory project with this saved state."):
             try:
                 data = st.session_state.exporter.load_log(selected_log)
                 st.session_state.state = ProjectState.model_validate(data['data'])
@@ -54,6 +58,7 @@ with st.sidebar:
                 st.error(f"Error loading log: {e}")
     else:
         st.info("No logs found in /logs.")
+
 
     st.divider()
     st.markdown("### Model Config")

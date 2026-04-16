@@ -5,15 +5,18 @@ from .state import ProjectState, ChapterMetadata
 from .llm_client import OllamaClient
 
 class BookBotAgents:
+    """Provides a suite of specialized agents for narrative plotting and critique."""
+
     def __init__(self, client: OllamaClient):
+        """Initialize with an LLM client."""
         self.client = client
 
     def estimate_tokens(self, text: str) -> int:
-        """Rough estimation of tokens: characters / 4."""
+        """Estimate the number of tokens in a string using a character-based heuristic."""
         return len(text) // 4
 
     def get_context_summary(self, chapters: List[ChapterMetadata], count: int = 5) -> str:
-        """Summarizes the last 'count' chapters for context."""
+        """Return a formatted summary of the most recent chapters for context."""
         recent = chapters[-count:] if chapters else []
         summary = ""
         for c in recent:
@@ -21,7 +24,7 @@ class BookBotAgents:
         return summary
 
     def run_plotter_turn(self, state: ProjectState, chap_num: int, context_summary: str, critique: Optional[str] = None, previous_draft: Optional[str] = None):
-        """01a_plotter turn: Initial draft or refinement based on critique."""
+        """Execute a plotter turn to generate or refine a detailed chapter outline."""
         
         system_prompt = (
             "You are '02a_plotter', an expert story architect. Your goal is to design a single chapter outline "
@@ -62,40 +65,55 @@ class BookBotAgents:
         return self._clean_json(response)
 
     def run_skeleton_plotter_turn(self, state: ProjectState, count: int, critique: Optional[str] = None, previous_draft: Optional[str] = None):
-        """Phase 1: Generates the book-wide skeleton."""
+        """Execute a skeleton plotter turn to generate or refine the project-wide outline."""
         system_prompt = (
             "You are '01a_skeleton_plotter', an expert story architect. Your task is to design the high-level skeleton "
             f"of a {count}-chapter book. You MUST respond in valid JSON format only."
         )
 
         user_content = (
-            f"PROJECT SPECS:\nTitle: {state.plot.book_title}\nWorld: {state.world.setting}\n"
-            f"Goals: {state.plot.goals}\nConflicts: {state.plot.conflicts}\n"
-            f"Philosophy: {state.plot.philosophy}\n\n"
-            f"EXISTING CHAPTER WORK (KEEP THESE IN YOUR NEW SKELETON):\n"
-            + "\n".join([f"Ch {c.chapter_number}: {c.title} - {c.summary}" for c in state.chapters if c.summary]) + "\n\n"
-            f"TASK: Generate a {count}-chapter skeleton. Each chapter MUST have a title and a SINGLE PARAGRAPH of high-level description. "
-            "This paragraph should cover the major events, key people involved, and important locations."
+            "### PROJECT SPECIFICATIONS\n"
+            f"- Title: {state.plot.book_title}\n"
+            f"- World: {state.world.setting}\n"
+            f"- Goals: {state.plot.goals}\n"
+            f"- Conflicts: {state.plot.conflicts}\n"
+            f"- Philosophy: {state.plot.philosophy}\n\n"
         )
 
+        if state.chapters and not previous_draft:
+             user_content += "### EXISTING CHAPTER WORK (KEEP THESE IN YOUR NEW SKELETON)\n"
+             user_content += "\n".join([f"Ch {c.chapter_number}: {c.title} - {c.summary}" for c in state.chapters if c.summary]) + "\n\n"
+
         if critique and previous_draft:
-            user_content += f"\n\nPREVIOUS SKELETON:\n{previous_draft}\n\nCRITIQUE FROM 01b_skeleton_critic:\n{critique}\n\nRefine the skeleton based on this feedback."
+            user_content += "### PREVIOUS SKELETON DRAFT\n"
+            user_content += f"```json\n{previous_draft}\n```\n\n"
+            user_content += "### CRITIQUE FROM 01b_skeleton_critic\n"
+            user_content += f"{critique}\n\n"
+            user_content += "**TASK:** Refine the skeleton above by addressing ALL points in the critique. Ensure story consistency is maintained.\n"
+        else:
+            user_content += f"**TASK:** Generate a fresh {count}-chapter skeleton. Each chapter MUST have a title and a SINGLE PARAGRAPH of high-level description.\n"
 
         user_content += (
-            "\n\nJSON STRUCTURE REQUIRED:\n"
+            "\n### REQUIRED JSON FORMAT\n"
+            "Return ONLY a valid JSON object. Do not include any conversational preamble. "
+            "Your response must start with '{'.\n"
+            "```json\n"
             "{\n"
             "  \"chapters\": [\n"
-            "    {\"chapter_number\": 1, \"title\": \"Chapter Title\", \"summary\": \"High-level paragraph description...\"},\n"
+            "    {\"chapter_number\": 1, \"title\": \"Title\", \"summary\": \"Description...\"},\n"
             "    ...\n"
             "  ]\n"
-            "}"
+            "}\n"
+            "```"
         )
 
         response = self.client.prompt(system_prompt, user_content)
         return self._clean_json(response)
 
+
+
     def run_skeleton_formatter_turn(self, raw_outline: str, target_count: int):
-        """Phase 1 Step 4: Converts creative prose to strict JSON."""
+        """Convert creative prose narrative into a strict JSON chapter structure."""
         system_prompt = (
             "You are '01c_skeleton_formatter', a data extraction specialist. Your task is to take a creative book "
             "outline (prose) and convert it into a strict JSON structure. Do NOT add new plot points."
@@ -119,7 +137,7 @@ class BookBotAgents:
         return self._clean_json(response)
 
     def run_skeleton_critic_turn(self, state: ProjectState, content: str, is_final: bool = False):
-        """Phase 1: Evaluates the book-wide skeleton (prose in Step 2, JSON in Step 5)."""
+        """Evaluate the project skeleton for structural integrity and pacing."""
         role_desc = "literature expert and antagonistic critic" if not is_final else "literature expert providing final QA on the structured skeleton"
         system_prompt = f"You are '01b_skeleton_critic', a {role_desc}. Evaluate the book skeleton for pacing, twists, and structural integrity."
         
@@ -140,8 +158,20 @@ class BookBotAgents:
 
 
 
+    def extract_recommendations(self, text: str) -> List[str]:
+        """Parse bulleted recommendations from an agent's critique text."""
+        # Find the section starting with 'Recommendations'
+        match = re.search(r'(?:Recommendations|Advice for the Plotter).*?\n(.*?)(?:\n\n|\Z|###|---)', text, re.DOTALL | re.IGNORECASE)
+        if not match:
+            return []
+        
+        section_content = match.group(1)
+        # Extract lines starting with bullet points (- or *)
+        recommendations = re.findall(r'^[ \t]*[-*][ \t]*(.+)$', section_content, re.MULTILINE)
+        return [r.strip() for r in recommendations if r.strip()]
+
     def analyze_impact(self, state: ProjectState, changed_index: int, new_content: str):
-        """Phase 2: Detects ripple effects when a chapter is modified."""
+        """Identify potential ripple effects and contradictions caused by a chapter change."""
         system_prompt = (
             "You are '02b_critic' performing an Impact Analysis. When a chapter changes, you must identify "
             "how it breaks or affects the rest of the book's skeleton."
@@ -163,7 +193,7 @@ class BookBotAgents:
         return self.client.prompt(system_prompt, user_content)
 
     def run_critic_turn(self, state: ProjectState, chap_num: int, context_summary: str, draft: str, is_final: bool = False):
-        """02b_critic turn: Evaluation of the plotter's output."""
+        """Execute a critic turn to evaluate a detailed chapter draft."""
         
         role_desc = "literature expert and antagonistic critic" if not is_final else "literature expert providing final thoughts for the user"
         system_prompt = (
@@ -180,23 +210,22 @@ class BookBotAgents:
         if is_final:
             user_content += (
                 "Provide your final assessment of this refined chapter in exactly these sections:\n"
-                "[FINAL THOUGHTS]: General summary.\n"
+                "[SUMMARY]: General status and if it's ready.\n"
                 "[STRENGTHS]: What works well.\n"
-                "[AREAS FOR TIGHTENING]: What could be better.\n"
-                "[INTERNAL LOGIC & THEMES]: Philosophical or logical consistency.\n"
-                "[VERDICT]: Final recommendation (e.g., Approved, Needs minor polish, etc.)."
+                "[AREAS FOR TIGHTENING]: What could be better."
             )
         else:
             user_content += "Identify flaws, pacing issues, or missed opportunities. Provide specific advice for the plotter to improve this draft."
 
+
         return self.client.prompt(system_prompt, user_content)
 
     def _clean_json(self, text: str):
-        """Attempts to extract JSON from a string that might contain reasoning tags or multiples."""
+        """Extract and parse a JSON block from potentially noisy agent output."""
         # 1. Remove reasoning blocks like <think>...</think>
         text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
         
-        # 2. Find the outermost braces to handle nested structures
+        # 2. Extract content between first and last curly brace
         start = text.find('{')
         end = text.rfind('}')
         
@@ -204,18 +233,18 @@ class BookBotAgents:
             json_str = text[start:end+1]
             try:
                 return json.loads(json_str)
-            except json.JSONDecodeError:
-                # If direct load fails, try to fix common issues or fallback to regex
-                pass
+            except json.JSONDecodeError as e:
+                # If direct load fails, try a aggressive filter for code blocks
+                match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+                if match:
+                    try:
+                        return json.loads(match.group(1))
+                    except: pass
+                
+                print(f"DEBUG: Failed to parse JSON. Error: {e}")
+                print(f"DEBUG: Raw Text Snippet: {text[:200]}...")
+                return {"error": f"JSON Parse Error: {str(e)}", "raw": text}
 
-        try:
-            # Fallback: greedy match for the largest block
-            match = re.search(r'(\{.*\})', text, re.DOTALL)
-            if match:
-                return json.loads(match.group(0))
-            
-            # Final fallback: raw text
-            return json.loads(text)
-        except Exception as e:
-            # Check if it's "too many chapters" or just garbage
-            return {"error": f"JSON Parse Error: {str(e)}", "raw": text}
+        print("DEBUG: No JSON braces found in response.")
+        print(f"DEBUG: Raw Text: {text}")
+        return {"error": "JSON Parse Error: No JSON block found in response.", "raw": text}
