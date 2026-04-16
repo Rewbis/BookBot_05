@@ -7,8 +7,10 @@ class Exporter:
     def __init__(self, base_dir="e:\\Coding\\BookBot_05"):
         self.exports_dir = os.path.join(base_dir, "exports")
         self.logs_dir = os.path.join(base_dir, "logs")
+        self.skeleton_dir = os.path.join(base_dir, "skeleton_output")
         os.makedirs(self.exports_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
+        os.makedirs(self.skeleton_dir, exist_ok=True)
 
     def save_log(self, state: ProjectState):
         entry = state.log_entry()
@@ -25,6 +27,33 @@ class Exporter:
     def load_log(self, filename):
         """Reads a log file and returns the data dictionary."""
         filepath = os.path.join(self.logs_dir, filename)
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    def save_skeleton_draft(self, data: list, raw_text: str, filename: str = None):
+        """Saves both the parsed JSON and the raw AI text for debugging/persistence."""
+        if not filename:
+            filename = f"skeleton_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Save parsed JSON
+        json_path = os.path.join(self.skeleton_dir, f"{filename}.json")
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+            
+        # Save raw text for debugging
+        txt_path = os.path.join(self.skeleton_dir, f"{filename}.txt")
+        with open(txt_path, 'w', encoding='utf-8') as f:
+            f.write(raw_text)
+            
+        return json_path, txt_path
+
+    def list_skeletons(self):
+        """Lists available skeleton JSON files."""
+        return sorted([f for f in os.listdir(self.skeleton_dir) if f.endswith('.json')], reverse=True)
+
+    def load_skeleton(self, filename: str):
+        """Loads a skeleton JSON file."""
+        filepath = os.path.join(self.skeleton_dir, filename)
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
 
@@ -65,3 +94,16 @@ class Exporter:
                 f.write(f"[SCENE_NOTES]:\n{chap.scene_notes}\n")
 
         return [world_path, style_path, meta_path]
+
+    def format_skeleton_as_text(self, data: list) -> str:
+        """Converts a skeleton list into a human-readable string."""
+        lines = ["BOOK SKELETON EXPORT", "="*40, ""]
+        for chap in data:
+            num = chap.get('chapter_number', '?')
+            title = chap.get('title', 'Untitled')
+            summary = chap.get('summary', 'No summary provided.')
+            lines.append(f"Chapter {num}: {title}")
+            lines.append(f"{summary}")
+            lines.append("")
+        return "\n".join(lines)
+

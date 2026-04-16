@@ -26,6 +26,7 @@ class PlotSpecs(BaseModel):
 class ChapterMetadata(BaseModel):
     chapter_number: int
     title: str = ""
+    summary: str = ""
     pov: str = ""
     plot_thread_a: str = ""
     plot_thread_b: str = ""

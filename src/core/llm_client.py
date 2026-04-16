@@ -18,7 +18,7 @@ class OllamaClient:
             }
         }
         try:
-            response = requests.post(self.base_url, json=payload, timeout=120)
+            response = requests.post(self.base_url, json=payload, timeout=600)
             response.raise_for_status()
             return response.json().get("response", "Error: No response content")
         except Exception as e:
