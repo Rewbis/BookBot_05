@@ -26,8 +26,10 @@ class OllamaClient:
             response = requests.post(self.base_url, json=payload, timeout=600)
             response.raise_for_status()
             return response.json().get("response", "Error: No response content")
+        except requests.exceptions.ConnectionError:
+            return "SIGNAL_OFFLINE_OLLAMA"
         except Exception as e:
-            return f"Error connecting to Ollama: {str(e)}"
+            return f"SIGNAL_ERROR_LLM: {str(e)}"
 
     def prompt_structured(self, system_prompt: str, user_prompt: str):
         """Helper to encourage key-value pair output if needed."""

@@ -81,15 +81,32 @@ class Exporter:
 
     def export_txt_files(self, state: ProjectState):
         """Export the project state as a series of formatted .txt files."""
+        # Project Summary
+        summary_path = os.path.join(self.exports_dir, f"{state.plot.book_title}_summary.txt")
+        with open(summary_path, 'w', encoding='utf-8') as f:
+            f.write(f"PROJECT SUMMARY: {state.plot.book_title}\n")
+            f.write("="*40 + "\n")
+            f.write(f"[GENRE]: {state.plot.genre}\n")
+            f.write(f"[PHILOSOPHY]: {state.plot.philosophy}\n")
+            f.write(f"[CHAPTERS]: {state.chapter_count}\n")
+            f.write(f"[TARGET WC]: {state.target_word_count}\n\n")
+            f.write(f"--- CHARACTER PROFILES ---\n")
+            for char in state.characters:
+                f.write(f"NAME: {char.name}\n")
+                f.write(f"ARCHETYPE: {char.archetype}\n")
+                f.write(f"MOTIVATION: {char.motivation}\n")
+                f.write(f"NOTES: {char.notes}\n")
+                f.write("-" * 20 + "\n")
+
         # World info
         world_path = os.path.join(self.exports_dir, f"{state.plot.book_title}_world_info.txt")
         with open(world_path, 'w', encoding='utf-8') as f:
             f.write(f"WORLD INFO: {state.plot.book_title}\n")
             f.write("="*40 + "\n")
-            f.write(f"[SETTING]: {state.world.setting}\n")
-            f.write(f"[HISTORY]: {state.world.history}\n")
-            f.write(f"[RULES]: {state.world.rules}\n")
-            f.write(f"[OTHER]: {state.world.other}\n")
+            f.write(f"[SETTING/GEOGRAPHY]:\n{state.world.setting}\n\n")
+            f.write(f"[HISTORY/BACKDROP]:\n{state.world.history}\n\n")
+            f.write(f"[SOCIETAL/ magic/ TECH RULES]:\n{state.world.rules}\n\n")
+            f.write(f"[OTHER DETAILS]:\n{state.world.other}\n")
 
         # Style guide
         style_path = os.path.join(self.exports_dir, f"{state.plot.book_title}_style_guide.txt")
@@ -99,23 +116,28 @@ class Exporter:
             f.write(f"[TONE]: {state.style.tone}\n")
             f.write(f"[VOICE]: {state.style.voice}\n")
             f.write(f"[VOCABULARY]: {state.style.vocabulary}\n")
-            f.write(f"[GLOBAL_POV]: {state.style.pov_global}\n")
-            f.write(f"[TENSE]: {state.style.tense}\n")
+            f.write(f"[GLOBAL POV]: {state.style.pov_global}\n")
+            f.write(f"[TENSE]: {state.style.tense}\n\n")
+            f.write(f"[EXAMPLE PROSE PARAGRAPHS]:\n{state.style.example_paragraphs}\n")
 
         # Chapter Metadata
         meta_path = os.path.join(self.exports_dir, f"{state.plot.book_title}_chapter_metadata.txt")
         with open(meta_path, 'w', encoding='utf-8') as f:
-            f.write(f"CHAPTER METADATA: {state.plot.book_title}\n")
+            f.write(f"CHAPTER ARCHITECTURE: {state.plot.book_title}\n")
             f.write("="*40 + "\n")
             for chap in state.chapters:
-                f.write(f"\n--- CHAPTER {chap.chapter_number}: {chap.title} ---\n")
-                f.write(f"[POV]: {chap.pov}\n")
-                f.write(f"[PLOT_THREAD_A]: {chap.plot_thread_a}\n")
-                f.write(f"[PLOT_THREAD_B]: {chap.plot_thread_b}\n")
-                f.write(f"[KEY_REVELATION]: {chap.key_revelation}\n")
-                f.write(f"[SCENE_NOTES]:\n{chap.scene_notes}\n")
+                status = "(Detailed)" if chap.scene_notes else "(Skeleton)"
+                f.write(f"\n--- CHAPTER {chap.chapter_number}: {chap.title} {status} ---\n")
+                f.write(f"[SKELETON SUMMARY]:\n{chap.summary}\n")
+                if chap.scene_notes:
+                    f.write(f"[POV]: {chap.pov}\n")
+                    f.write(f"[TENSE]: {chap.tense}\n")
+                    f.write(f"[THREAD A]: {chap.plot_thread_a}\n")
+                    f.write(f"[THREAD B]: {chap.plot_thread_b}\n")
+                    f.write(f"[KEY REVELATION]: {chap.key_revelation}\n")
+                    f.write(f"[SCENE BEATS/NOTES]:\n{chap.scene_notes}\n")
 
-        return [world_path, style_path, meta_path]
+        return [summary_path, world_path, style_path, meta_path]
 
     def format_skeleton_as_text(self, data: list) -> str:
         """Convert a skeleton chapter list into a human-readable string."""

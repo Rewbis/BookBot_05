@@ -2,10 +2,12 @@ import pytest
 from src.core.agents import BookBotAgents
 
 def test_estimate_tokens():
-    """Verify that token estimation follows the characters/4 heuristic."""
+    """Verify that token estimation follows the characters/3.8 heuristic + 10 overhead."""
     agents = BookBotAgents(None)
-    assert agents.estimate_tokens("ABCD") == 1
-    assert agents.estimate_tokens("12345678") == 2
+    # "ABCD" is 4 chars. 4/3.8 = 1.05 -> 1. 1 + 10 = 11.
+    assert agents.estimate_tokens("ABCD") == 11
+    # "12345678" is 8 chars. 8/4 approx 2. 2 + 10 = 12.
+    assert agents.estimate_tokens("12345678") == 12
 
 def test_clean_json_valid():
     """Verify that _clean_json correctly parses valid JSON blocks."""

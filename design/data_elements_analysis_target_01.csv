@@ -1,0 +1,14 @@
+Data Element, Definition, data type,Phase 1 (Initial Specs),Phase 2 (Skeleton),Phase 3 (Detailed Notes),Phase 4 (NarrativeEngine)
+"Project Identity", Genre/series type - user input,string,Yes,Yes,Yes,Yes
+"Book Title", Working Title - user input,string,Yes,Yes,Yes,Yes
+"Chapter Count", number of chapters as set by user adjustable if needed - user input,integer,Yes,Yes,Yes,Yes
+"Target word count", target approximate word count for the book - user input,integer,Yes,Yes,Yes,Yes
+"Philosophy / Message", The core message or theme of the book - user input,string,Yes,Yes,Yes,Yes
+"World Building", Rules/History/Geography/Other - user input,List[str],Yes,Yes,Yes,Yes
+"Character Profiles", Names Motivations Archetypes,List[Dict],Yes,Yes,Yes,Yes
+"Style Guide", Tone/Voice/Vocabulary Constraints plus example paragraphs - user input,Dict,Yes,Yes,Yes,Yes
+"Narrative Arcs", Conflicts/Stakes/Twists - user input,Dict,Yes,Yes,Yes,Yes
+"Chapter Skeleton", "Chapter Title" and "Chapter Detail" as a nested object/list - AI generated and User reviewed and edited,List[Dict],,Yes,Yes,Yes
+"Chapter Map", Nested titles/summaries/beats/POV/Tense - AI generated and User reviewed and edited,List[Dict],,Yes,Yes,Yes
+"Drafting Output",the full text for a first draft which is ready for editorial review,List[Dict],,,,Yes
+"Full Chapter Prose",the full text for a final draft which is ready for publication,List[Dict],,,,Yes

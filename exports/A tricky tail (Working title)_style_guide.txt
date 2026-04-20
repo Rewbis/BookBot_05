@@ -1,7 +1,0 @@
-STYLE GUIDE: A tricky tail (Working title)
-========================================
-[TONE]: Gritty, realistic, brutal at times, but frequently holding up some fragment of the noble nature people are capable of.
-[VOICE]: First person, switching between the perspective of the antagonist, Gonad Goldrump, with other chapters from the perspective of his enemy of the day.
-[VOCABULARY]: Keep it concise, don't indulge in puffery - if a fact or event is mundane, feel free to describe it as such.
-[GLOBAL_POV]: First Person
-[TENSE]: Past

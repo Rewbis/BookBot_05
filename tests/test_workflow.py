@@ -8,7 +8,7 @@ def test_run_skeleton_generation_success(mocker, sample_state):
     mock_exporter = mocker.Mock()
     
     # Mock plotter success
-    mock_agents.run_skeleton_plotter_turn.return_value = {"chapters": []}
+    mock_agents.run_skeleton_planner_turn.return_value = {"chapters": []}
     # Mock critic
     mock_agents.run_skeleton_critic_turn.return_value = "Critique"
     # Mock formatter
@@ -24,15 +24,15 @@ def test_run_skeleton_generation_success(mocker, sample_state):
     assert "error" not in result
     assert result["chapters"][0]["title"] == "Test"
     assert len(status_calls) >= 5  # Should have status updates for each step
-    assert mock_agents.run_skeleton_plotter_turn.call_count == 2 # Initial + Refinement
+    assert mock_agents.run_skeleton_planner_turn.call_count == 2 # Initial + Refinement
 
 def test_run_chapter_detailing_success(mocker, sample_state):
     """Verify that chapter detailing correctly orchestrates plotting and critique."""
     mock_agents = mocker.Mock()
     mock_exporter = mocker.Mock()
     
-    mock_agents.run_plotter_turn.return_value = {"title": "Refined"}
-    mock_agents.run_critic_turn.return_value = "Final Critic Thoughts"
+    mock_agents.run_architect_turn.return_value = {"title": "Refined"}
+    mock_agents.run_architect_critic_turn.return_value = "Final Critic Thoughts"
     
     workflow = NarrativeWorkflow(mock_agents, mock_exporter)
     status_calls = []
@@ -42,4 +42,4 @@ def test_run_chapter_detailing_success(mocker, sample_state):
     assert "error" not in result
     assert result["draft_json"]["title"] == "Refined"
     assert result["final_qa"] == "Final Critic Thoughts"
-    assert mock_agents.run_plotter_turn.call_count == 2 # Initial + Refined
+    assert mock_agents.run_architect_turn.call_count == 2 # Initial + Refined
